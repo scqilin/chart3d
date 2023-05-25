@@ -1,9 +1,10 @@
 {
   "name": "chart3d",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "type": "module",
   "main": "./dist/chart3d.js",
-  "keywords":[
+  "types": "./dist/chart3d.d.ts",
+  "keywords": [
     "chart3d",
     "three.js",
     "vite"
@@ -14,9 +15,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "terser": "^5.17.6",
     "typescript": "^5.0.2",
-    "vite": "^4.3.2"
+    "vite": "^4.3.2",
+    "vite-plugin-dts": "^2.3.0"
   },
   "dependencies": {
     "@types/three": "^0.150.0",
