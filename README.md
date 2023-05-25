@@ -20,3 +20,5 @@ document.body.appendChild(div);
 const chart = new Chart3d(div);
 chart.initScene();
 ```
+
+auto
