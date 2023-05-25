@@ -1,8 +1,13 @@
 {
-  "name": "charts3d",
-  "private": true,
-  "version": "0.0.0",
+  "name": "chart3d",
+  "version": "0.0.1",
   "type": "module",
+  "main": "./dist/chart3d.js",
+  "keywords":[
+    "chart3d",
+    "three.js",
+    "vite"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --config vite.config.ts",
