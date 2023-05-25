@@ -1,9 +1,9 @@
 {
   "name": "chart3d",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "main": "./dist/chart3d.js",
-  "types": "./dist/chart3d.d.ts",
+  "types": "./dist/main.d.ts",
   "keywords": [
     "chart3d",
     "three.js",
