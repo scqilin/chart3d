@@ -5,19 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chart3d</title>
     <style>
-       * {
-        margin: 0;
-        padding: 0;
-       }
+      .box {
+        margin: 4px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      }
     </style>
   </head>
-  <body>
-    <div id="container" style="width: 300px; height: 300px;"></div>
+  <body style="display: flex;flex-wrap: wrap;">
     <script type="module">
-      import Charts3d from "./dist/chart3d.js";
-      const container = document.getElementById("container");
-      const scene = new Charts3d(container);
-      scene.initScene();
+      import {Demo, RenderTarget} from "./dist/chart3d.js";
+      // import {Demo, RenderTarget} from "./src/main"
+
+      createCla(Demo,200,200);
+      createCla(RenderTarget,200,200);
+
+      function createCla(cla,w,h) {
+          const div = createDiv(w,h);
+          const scene = new cla(div);
+          scene.initScene();
+      }
+
+
+      function createDiv(w,h) {
+          const div = document.createElement("div");
+          div.style.width = w + "px";
+          div.style.height = h + "px";
+          div.className = "box";
+          document.body.appendChild(div);
+          return div;
+      }
+
     </script>
   </body>
 </html>
