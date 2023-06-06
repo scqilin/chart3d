@@ -7,12 +7,12 @@ export default defineConfig({
             name: 'charts3d',
         },
         rollupOptions: {
-            external: ['three'],
-            output: {
-                globals: {
-                    three: 'THREE'
-                }
-            },
+            // external: ['three'],
+            // output: {
+            //     globals: {
+            //         three: 'THREE'
+            //     }
+            // },
         },
        
     },
