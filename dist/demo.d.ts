@@ -1,16 +1,8 @@
 import * as THREE from 'three';
-export declare class Demo {
-    dom: HTMLElement;
+import { BasicScene } from './core/scene';
+export declare class Demo extends BasicScene {
+    cube: THREE.Mesh;
+    clock: THREE.Clock;
     constructor(dom: HTMLElement);
-    init(): void;
-    getDomSize(): {
-        width: number;
-        height: number;
-    };
-    createScene(): THREE.Scene;
-    createCamera(): THREE.PerspectiveCamera;
-    createRenderer(): THREE.WebGLRenderer;
-    createLight(): THREE.AmbientLight;
-    createCube(): THREE.Mesh<THREE.BoxGeometry, THREE.MeshNormalMaterial>;
-    initScene(): THREE.Scene;
+    protected renderOthers(): void;
 }

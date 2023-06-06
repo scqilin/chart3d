@@ -12,8 +12,9 @@ export default defineConfig({
                 globals: {
                     three: 'THREE'
                 }
-            }
-        }
+            },
+        },
+       
     },
     plugins: [dts()],
 })

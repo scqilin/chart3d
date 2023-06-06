@@ -12,9 +12,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --config vite.config.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "doc": "npx typedoc"
   },
   "devDependencies": {
+    "typedoc": "^0.24.8",
     "typescript": "^5.0.2",
     "vite": "^4.3.2",
     "vite-plugin-dts": "^2.3.0"

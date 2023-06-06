@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { BasicScene } from './core/scene';
-export declare class RenderTarget extends BasicScene {
+export declare class RenderTargetOutline extends BasicScene {
     clock: THREE.Clock;
     postCamera: THREE.OrthographicCamera;
     postScene: THREE.Scene;

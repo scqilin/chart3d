@@ -1,40 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chart3d</title>
-    <style>
-      .box {
-        margin: 4px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-      }
-    </style>
-  </head>
-  <body style="display: flex;flex-wrap: wrap;">
-    <script type="module">
-      import {Demo, RenderTarget} from "./dist/chart3d.js";
-      // import {Demo, RenderTarget} from "./src/main"
 
-      createCla(Demo,200,200);
-      createCla(RenderTarget,200,200);
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chart3d</title>
+  <style>
+    .box {
+      margin: 4px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
 
-      function createCla(cla,w,h) {
-          const div = createDiv(w,h);
-          const scene = new cla(div);
-          scene.initScene();
-      }
+<body style="display: flex;flex-wrap: wrap; background-color: #eeeeee;">
+  <script type="module">
+    import { Demo, Test, RenderTarget, RenderTargetOutline } from "./dist/chart3d.js";
+    // import { Demo, Test, RenderTarget, RenderTargetOutline } from "./src/main"
+
+    createCla(Test, 200, 200, 'black');
+    createCla(Demo, 200, 200);
+    createCla(RenderTarget, 200, 200);
+    createCla(RenderTargetOutline, 200, 200);
+
+    function createCla(cla, w, h, bgColor) {
+      const div = createDiv(w, h);
+      if (bgColor) div.style.backgroundColor = bgColor;
+      const scene = new cla(div);
+    }
 
 
-      function createDiv(w,h) {
-          const div = document.createElement("div");
-          div.style.width = w + "px";
-          div.style.height = h + "px";
-          div.className = "box";
-          document.body.appendChild(div);
-          return div;
-      }
+    function createDiv(w, h) {
+      const div = document.createElement("div");
+      div.style.width = w + "px";
+      div.style.height = h + "px";
+      div.className = "box";
+      document.body.appendChild(div);
+      return div;
+    }
 
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>
