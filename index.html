@@ -15,13 +15,10 @@
 
 <body style="display: flex;flex-wrap: wrap; background-color: #eeeeee;">
   <script type="module">
-    import { Demo, Test, RenderTarget, RenderTargetOutline } from "./dist/chart3d.js";
-    // import { Demo, Test, RenderTarget, RenderTargetOutline } from "./src/main"
+    import { Test } from "./dist/chart3d.js";
+    // import { Test } from "./src/main"
 
     createCla(Test, 200, 200, 'black');
-    createCla(Demo, 200, 200);
-    createCla(RenderTarget, 200, 200);
-    createCla(RenderTargetOutline, 200, 200);
 
     function createCla(cla, w, h, bgColor) {
       const div = createDiv(w, h);
