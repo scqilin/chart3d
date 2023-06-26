@@ -2,19 +2,31 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Man</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Walk</title>
+  <style>
+    body {
+      overflow: hidden;
+      margin: 0;
+      touch-action: none
+    }
+
+    #joyDiv {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 150px;
+      height: 150px
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-c8a672ef.js"></script>
 </head>
 
 <body>
-    <h2>
-        <a href="./demo1.html">demo1</a>
-    </h2>
-    <h2>
-        <a href="./demo2.html">demo2</a>
-    </h2>
+  <div id="joyDiv"></div>
+  <canvas style="width: 100vw; height:100vh" id="renderCanvas"></canvas>
+  
 </body>
 
 </html>
