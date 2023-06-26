@@ -1,243 +1,261 @@
-// author: Willie Lawrence
-// contact: cptx032 arroba gmail dot com
-// based in https://github.com/jeromeetienne/virtualjoystick.js/blob/master/virtualjoystick.js
-var JOYSTICK_DIV = null;
 
-function __init_joystick_div()
-{
-	JOYSTICK_DIV = document.createElement('div');
-	var div_style = JOYSTICK_DIV.style;
-	div_style.background = 'rgba(255,255,255,0)';
-	div_style.position = 'absolute';
-	div_style.top = '0px';
-	div_style.bottom = '0px';
-	div_style.left = '0px';
-	div_style.right = '0px';
-	div_style.margin = '0px';
-	div_style.padding = '0px';
-	div_style.borderWidth = '0px';
-	div_style.position = 'absolute';
-	div_style.overflow = 'hidden';
-	div_style.zIndex = '10000';
-	document.body.appendChild( JOYSTICK_DIV );
-}
-var JoyStick = function( attrs ) {
-	this.radius = attrs.radius || 50;
-	this.inner_radius = attrs.inner_radius || this.radius / 2;
-	this.x = attrs.x || 0;
-	this.y = attrs.y || 0;
-	this.mouse_support = attrs.mouse_support || true;
+var JoyStick = (function (container, parameters) {
+	parameters = parameters || {};
+	var title = (undefined === parameters.title ? 'joystick' : parameters.title),
+		width = (undefined === parameters.width ? 0 : parameters.width),
+		height = (undefined === parameters.height ? 0 : parameters.height),
+		internalFillColor = (undefined === parameters.internalFillColor ? '#00AA00' : parameters.internalFillColor),
+		internalLineWidth = (undefined === parameters.internalLineWidth ? 2 : parameters.internalLineWidth),
+		internalStrokeColor = (undefined === parameters.internalStrokeColor ? '#003300' : parameters.internalStrokeColor),
+		externalLineWidth = (undefined === parameters.externalLineWidth ? 2 : parameters.externalLineWidth),
+		externalStrokeColor = (undefined === parameters.externalStrokeColor ? '#008000' : parameters.externalStrokeColor);
 
-	if ( attrs.visible === undefined )
-	{
-		attrs.visible = true;
+	// Create Canvas element and add it in the Container object
+	var objContainer = document.getElementById(container);
+	var canvas = document.createElement('canvas');
+	canvas.id = title;
+	if (width == 0) width = objContainer.clientWidth;
+	if (height == 0) height = objContainer.clientHeight;
+	canvas.width = width;
+	canvas.height = height;
+	objContainer.appendChild(canvas);
+	var context = canvas.getContext('2d');
+
+	var pressed = 0; // Bool - 1=Yes - 0=No
+	var circumference = 2 * Math.PI;
+	var internalRadius = (canvas.width - ((50 * 2) + 10)) / 2;
+	var maxMoveStick = internalRadius + 5;
+	var externalRadius = internalRadius + 30;
+	var centerX = canvas.width / 2;
+	var centerY = canvas.height / 2;
+	var directionHorizontalLimitPos = canvas.width / 10;
+	var directionHorizontalLimitNeg = directionHorizontalLimitPos * -1;
+	var directionVerticalLimitPos = canvas.height / 10;
+	var directionVerticalLimitNeg = directionVerticalLimitPos * -1;
+	// Used to save current position of stick
+	var movedX = centerX;
+	var movedY = centerY;
+	var currentFinger = -1;
+
+	canvas.addEventListener('touchstart', onTouchStart, false);
+	canvas.addEventListener('touchmove', onTouchMove, false);
+	canvas.addEventListener('touchend', onTouchEnd, false);
+
+	canvas.addEventListener('mousedown', onMouseDown, false);
+	canvas.addEventListener('mousemove', onMouseMove, false);
+	canvas.addEventListener('mouseup', onMouseUp, false);
+
+	// Draw the object
+	drawExternal();
+	drawInternal(centerX, centerY);
+	/******************************************************
+	 * Private methods
+	 *****************************************************/
+	/**
+	 * @desc Draw the external circle used as reference position
+	 */
+	function drawExternal() {
+		context.beginPath();
+		context.arc(centerX, centerY, externalRadius, 0, circumference, false);
+		context.lineWidth = externalLineWidth;
+		context.strokeStyle = externalStrokeColor;
+		context.stroke();
+	}
+	/**
+	 * @desc Draw the internal stick in the current position the user have moved it
+	 */
+	function drawInternal() {
+		context.beginPath();
+		if (movedX < internalRadius) movedX = maxMoveStick;
+		if ((movedX + internalRadius) > canvas.width) movedX = canvas.width - (maxMoveStick);
+		if (movedY < internalRadius) movedY = maxMoveStick;
+		if ((movedY + internalRadius) > canvas.height) movedY = canvas.height - (maxMoveStick);
+		context.arc(movedX, movedY, internalRadius, 0, circumference, false);
+		// create radial gradient
+		var grd = context.createRadialGradient(centerX, centerY, 5, centerX, centerY, 200);
+		// Light color
+		grd.addColorStop(0, internalFillColor);
+		// Dark color
+		grd.addColorStop(1, internalStrokeColor);
+		context.fillStyle = grd;
+		context.fill();
+		context.lineWidth = internalLineWidth;
+		context.strokeStyle = internalStrokeColor;
+		context.stroke();
 	}
 
-	if ( attrs.visible )
-	{
-		this.__create_fullscreen_div();
-	}
-};
+	/**
+	 * @desc Events for manage touch
+	 */
+	function onTouchStart(event) {
+		pressed = 1;
 
-JoyStick.prototype.left = false;
-JoyStick.prototype.right = false;
-JoyStick.prototype.up = false;
-JoyStick.prototype.down = false;
+		var rect = canvas.getBoundingClientRect();
 
-JoyStick.prototype.__is_up = function ( dx, dy )
-{
-	if( dy >= 0 )
-	{
-		return false;
-	}
-	if( Math.abs(dx) > 2*Math.abs(dy) )
-	{
-		return false;
-	}
-	return true;
-};
+		var canvasWidth = rect.left + canvas.offsetWidth;
+		var canvasHeight = rect.top;
 
-JoyStick.prototype.__is_down = function down( dx, dy )
-{
-	if( dy <= 0 )
-	{
-		return false;
-	}
-	if( Math.abs(dx) > 2*Math.abs(dy) )
-	{
-		return false;
-	}
-	return true;	
-};
-
-JoyStick.prototype.__is_left = function( dx, dy )
-{
-	if( dx >= 0 )
-	{
-		return false;
-	}
-	if( Math.abs(dy) > 2*Math.abs(dx) )
-	{
-		return false;
-	}
-	return true;	
-};
-
-JoyStick.prototype.__is_right = function( dx, dy )
-{
-	if( dx <= 0 )
-	{
-		return false;
-	}
-	if( Math.abs(dy) > 2*Math.abs(dx) )
-	{
-		return false;
-	}
-	return true;	
-};
-
-JoyStick.prototype.__create_fullscreen_div = function()
-{
-	if ( JOYSTICK_DIV === null )
-	{
-		__init_joystick_div();
-	}
-	this.div = JOYSTICK_DIV;
-	///////////////////////////////////////////
-	this.base = document.createElement('span');
-	div_style = this.base.style;
-	div_style.width = this.radius * 2 + 'px';
-	div_style.height = this.radius * 2 + 'px';
-	div_style.position = 'absolute';
-	div_style.top = this.y - this.radius + 'px';
-	div_style.left = this.x - this.radius + 'px';
-	div_style.borderRadius = '50%';
-	div_style.borderColor = 'rgba(200,200,200,0.5)';
-	div_style.borderWidth = '1px';
-	div_style.borderStyle = 'solid';
-	this.div.appendChild( this.base );
-	///////////////////////////////////////////
-	this.control = document.createElement('span');
-	div_style = this.control.style;
-	div_style.width = this.inner_radius * 2 + 'px';
-	div_style.height = this.inner_radius * 2 + 'px';
-	div_style.position = 'absolute';
-	div_style.top = this.y - this.inner_radius + 'px';
-	div_style.left = this.x - this.inner_radius + 'px';
-	div_style.borderRadius = '50%';
-	div_style.backgroundColor = 'rgba(200,200,200,0.3)';
-	div_style.borderWidth = '1px';
-	div_style.borderColor = 'rgba(200,200,200,0.8)';
-	div_style.borderStyle = 'solid';
-	this.div.appendChild( this.control );
-	///////////////////////////////////////////
-	var self = this;
-	// the event is binded in all the screen
-	// to captures fast movements
-	function touch_hander( evt )
-	{
-		var touch_obj = evt.changedTouches ? evt.changedTouches[0] : evt;
-		if ( self.mouse_support && !(touch_obj.buttons === 1) )
-		{
-			return;
+		for (var i = 0; i < event.touches.length; i++) {
+			if (event.touches[i].pageX <= canvasWidth && event.touches[i].pageY >= canvasHeight) {
+				currentFinger = i;
+			}
 		}
-		self.control.style.left = touch_obj.clientX - self.inner_radius + 'px';
-		self.control.style.top = touch_obj.clientY - self.inner_radius + 'px';
-
-		var dx = touch_obj.clientX - self.x;
-		var dy = touch_obj.clientY - self.y;
-		self.up = self.__is_up( dx, dy );
-		self.down = self.__is_down( dx, dy );
-		self.left = self.__is_left( dx, dy );
-		self.right = self.__is_right( dx, dy );
-		self.mouseup = false;
 	}
-	function clear_flags()
-	{
-		self.left = false;
-		self.right = false;
-		self.up = false;
-		self.down = false;
-		self.mouseup = true;
-		self.control.style.top = self.y - self.inner_radius + 'px';
-		self.control.style.left = self.x - self.inner_radius + 'px';
-	}
-	this.bind( 'touchmove', touch_hander );
-	this.bind( 'touchstart', touch_hander );
-	this.bind( 'touchend', clear_flags );
-	if ( this.mouse_support )
-	{
-		this.bind( 'mousedown', touch_hander );
-		this.bind( 'mousemove', touch_hander );
-		this.bind( 'mouseup', clear_flags );
-	}
-};
-JoyStick.prototype.bind = function( evt, func )
-{
-	this.base.addEventListener( evt, func );
-	this.control.addEventListener( evt, func );
-};
-
-/*
-attributes:
-	+ x
-	+ y
-	+ func
-	+ mouse_support
-*/
-var JoyStickButton = function( attrs )
-{
-	this.radius = attrs.radius || 50;
-	this.x = attrs.x || 0;
-	this.y = attrs.y || 0;
-	this.text = attrs.text||'';
-	this.mouse_support = attrs.mouse_support||false;
-	if ( JOYSTICK_DIV === null )
-	{
-		__init_joystick_div();
-	}
-	this.base = document.createElement('span');
-	this.base.innerHTML = this.text;
-	div_style = this.base.style;
-	div_style.width = this.radius * 2 + 'px';
-	div_style.height = this.radius * 2 + 'px';
-	div_style.position = 'absolute';
-	div_style.top = this.y - this.radius + 'px';
-	div_style.left = this.x - this.radius + 'px';
-	div_style.borderRadius = '50%';
-	div_style.backgroundColor = 'rgba(255,255,255,0.1)';
-	div_style.borderWidth = '1px';
-	div_style.borderColor = 'rgba(255,255,255,0.8)';
-	div_style.borderStyle = 'solid';
-	JOYSTICK_DIV.appendChild( this.base );
-
-	if ( attrs.func )
-	{
-		if ( this.mouse_support )
-		{
-			this.bind( 'mousedown', attrs.func );
+	function onTouchMove(event) {
+		// Prevent the browser from doing its default thing (scroll, zoom)
+		event.preventDefault();
+		if (pressed == 1) {
+			try {
+				if (currentFinger > -1) {
+					movedX = event.touches[currentFinger].pageX;
+					movedY = canvas.height - (window.innerHeight - event.touches[currentFinger].pageY);
+					// Manage offset
+					movedX -= canvas.offsetLeft;
+					//movedY-=canvas.offsetTop;
+					// Delete canvas
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					// Redraw object
+					drawExternal();
+					drawInternal();
+				}
+			}
+			catch (err) {
+			}
 		}
-		this.bind( 'touchstart', attrs.func );
 	}
 
-	var self = this;
-	function __over()
-	{
-		div_style.backgroundColor = 'rgba(255,255,255,0.3)';
+	function onTouchEnd(event) {
+		pressed = 0;
+		currentFinger = -1;
+		// Reset position store variable
+		movedX = centerX;
+		movedY = centerY;
+		// Delete canvas
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		// Redraw object
+		drawExternal();
+		drawInternal();
+		//canvas.unbind('touchmove');
 	}
-	function __leave()
-	{
-		div_style.backgroundColor = 'rgba(255,255,255,0.1)';
+	/**
+	 * @desc Events for manage mouse
+	 */
+	function onMouseDown(event) {
+		pressed = 1;
 	}
-	self.bind( 'touchstart', __over );
-	self.bind( 'touchend', __leave );
-	if ( this.mouse_support )
-	{
-		self.bind( 'mousedown', __over );
-		self.bind( 'mouseup', __leave );
+	function onMouseMove(event) {
+		if (pressed == 1) {
+			movedX = event.pageX;
+			movedY = canvas.height - (window.innerHeight - event.pageY);
+			// Manage offset
+			movedX -= canvas.offsetLeft;
+			movedY -= canvas.offsetTop;
+			// Delete canvas
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			// Redraw object
+			drawExternal();
+			drawInternal();
+		}
 	}
-};
-JoyStickButton.prototype.bind = function( evt, func )
-{
-	this.base.addEventListener( evt, func );
-};
+	function onMouseUp(event) {
+		pressed = 0;
+		// Reset position store variable
+		movedX = centerX;
+		movedY = centerY;
+		// Delete canvas
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		// Redraw object
+		drawExternal();
+		drawInternal();
+		//canvas.unbind('mousemove');
+	}
+	/******************************************************
+	 * Public methods
+	 *****************************************************/
+	/**
+	 * @desc The width of canvas
+	 * @return Number of pixel width 
+	 */
+	this.GetWidth = function () {
+		return canvas.width;
+	};
+
+	/**
+	 * @desc The height of canvas
+	 * @return Number of pixel height
+	 */
+	this.GetHeight = function () {
+		return canvas.height;
+	};
+
+	/**
+	 * @desc The X position of the cursor relative to the canvas that contains it and to its dimensions
+	 * @return Number that indicate relative position
+	 */
+	this.GetPosX = function () {
+		return movedX;
+	};
+
+	/**
+	 * @desc The Y position of the cursor relative to the canvas that contains it and to its dimensions
+	 * @return Number that indicate relative position
+	 */
+	this.GetPosY = function () {
+		return movedY;
+	};
+
+	/**
+	 * @desc Normalizzed value of X move of stick
+	 * @return Integer from -100 to +100
+	 */
+	this.GetX = function () {
+		return (100 * ((movedX - centerX) / maxMoveStick)).toFixed();
+	};
+
+	/**
+	 * @desc Normalizzed value of Y move of stick
+	 * @return Integer from -100 to +100
+	 */
+	this.GetY = function () {
+		return ((100 * ((movedY - centerY) / maxMoveStick)) * -1).toFixed();
+	};
+
+	/**
+	 * @desc Get the direction of the cursor as a string that indicates the cardinal points where this is oriented
+	 * @return String of cardinal point N, NE, E, SE, S, SW, W, NW and C when it is placed in the center
+	 */
+	this.GetDir = function () {
+		var result = "";
+		var orizontal = movedX - centerX;
+		var vertical = movedY - centerY;
+
+		if (vertical >= directionVerticalLimitNeg && vertical <= directionVerticalLimitPos) {
+			result = "C";
+		}
+		if (vertical < directionVerticalLimitNeg) {
+			result = "N";
+		}
+		if (vertical > directionVerticalLimitPos) {
+			result = "S";
+		}
+
+		if (orizontal < directionHorizontalLimitNeg) {
+			if (result == "C") {
+				result = "W";
+			}
+			else {
+				result += "W";
+			}
+		}
+		if (orizontal > directionHorizontalLimitPos) {
+			if (result == "C") {
+				result = "E";
+			}
+			else {
+				result += "E";
+			}
+		}
+
+		return result;
+	};
+});
